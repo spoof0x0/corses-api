@@ -4,9 +4,21 @@ const app = express();
 const port = 3000; 
 const { get } = require('node:http');
 const coursesController = require('./controllers/courses.controller');
-const data = require('./data/courses');
-const { courses } = require('./data/courses');
 const coursesRoute = require('./routeres/courses.route');
+const mongoose = require('mongoose');
+
+const connectDB = async () => {
+    try {
+        await mongoose.connect('mongodb+srv://root:root@cluspoof.2l8ihaj.mongodb.net/code-zone-project');
+        console.log('MongoDB Connected...');
+    } catch (err) {
+        console.error('DB Connection Error:', err);
+        process.exit(1);
+    }
+};
+connectDB();
+
+
 
 app.use(morgan('dev'));
 

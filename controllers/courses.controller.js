@@ -1,49 +1,63 @@
-let { courses } = require('../data/courses');
+const Course = require('../models/Course');
 const {validationResult} = require('express-validator');
 
 
 
-const getAllCourses = (req, res) => {
-    res.send(courses);
-};
-
-const getCourse = (req, res) => {
-    const course = courses.find(c => c.id === +req.params.id);
-    if (!course) return res.status(404).send('Course not found');
-    res.send(course);
-};
-
-const addCourse = (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+const getAllCourses = async (req, res) => {
+    try {
+        const courses = await Course.find();
+        res.json(courses);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch courses' });
     }
-    const course = {
-        id: courses.length + 1,
-        ...req.body
-    };
-    courses.push(course);
-    res.status(201).json({ msg: "Course added successfully", course });
 };
 
-const editCourse = (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+const getCourse = async (req, res) => {
+    try {
+        const course = await Course.findById(req.params.id);
+        if (!course) return res.status(404).json({ error: 'Course not found' });
+        res.json(course);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch course' });
     }
-    let course = courses.find(c => c.id === +req.params.id);
-    if (!course) return res.status(404).send('Course not found');
-    // course.name = req.body.name;
-    course = { ...course, ...req.body };
-    // Object.assign(course, req.body);
-    res.json({ msg: "Course updated successfully", course });
+};
+
+const addCourse = async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const course = await Course.create(req.body);
+
+        res.status(201).json({
+            msg: "Course added successfully",
+            course
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to create course' });
+    }
+};
+
+const editCourse = async (req, res) => {
+    try {
+        let course = await Course.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
+        if (!course) return res.status(404).json({ error: 'Course not found' });
+        res.json({ msg: "Course updated successfully", course });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to update course' });
+    }
 }
 
-const deleteCourse = (req, res) => {
-    const courseIndex = courses.findIndex(c => c.id === +req.params.id);
-    if (courseIndex === -1) return res.status(404).send('Course not found');
-    const deletedCourse = courses.splice(courseIndex, 1);
-    res.json({ msg: "Course deleted successfully", course: deletedCourse[0] });
+const deleteCourse = async (req, res) => {
+    try {
+        const course = await Course.findByIdAndDelete(req.params.id);
+        if (!course) return res.status(404).json({ error: 'Course not found' });
+        res.json({ msg: "Course deleted successfully", course });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to delete course' });
+    }
 };
 
 module.exports = {
