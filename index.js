@@ -1,15 +1,27 @@
 const express = require('express');
 const morgan = require('morgan');
-const app = express();
-const port = 3000; 
-const { get } = require('node:http');
-const coursesController = require('./controllers/courses.controller');
-const coursesRoute = require('./routeres/courses.route');
 const mongoose = require('mongoose');
+const cors = require('cors');
+
+const dotenv = require('dotenv').config();
+
+const coursesRoute = require('./routeres/courses.route');
+
+const url = process.env.MONGO_URL;
+const port = process.env.PORT;
+
+const app = express();
+
+
+
+
+
+
+
 
 const connectDB = async () => {
     try {
-        await mongoose.connect('mongodb+srv://root:root@cluspoof.2l8ihaj.mongodb.net/code-zone-project');
+        await mongoose.connect(url);
         console.log('MongoDB Connected...');
     } catch (err) {
         console.error('DB Connection Error:', err);
@@ -21,12 +33,14 @@ connectDB();
 
 
 app.use(morgan('dev'));
-
+app.use(cors());
 app.use(express.json());
 
 app.use('/api/courses', coursesRoute);
 
-
+app.use((req, res) => {
+    res.status(404).json({ status: 'error', message: 'Route not found' });
+});
 
 
 app.listen(port, () => {
