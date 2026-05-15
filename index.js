@@ -6,6 +6,7 @@ const cors = require('cors');
 const dotenv = require('dotenv').config();
 
 const coursesRoute = require('./routeres/courses.route');
+const usersRoute = require('./routeres/users.route');
 
 const url = process.env.MONGO_URL;
 const port = process.env.PORT;
@@ -37,6 +38,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/courses', coursesRoute);
+app.use('/api/users', usersRoute);
 
 app.use((req, res) => {
     res.status(404).json({ status: 'error', message: 'Route not found' });

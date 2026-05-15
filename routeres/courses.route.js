@@ -3,18 +3,18 @@ const router = express.Router();
 const {body} = require('express-validator');
 const coursesController = require('../controllers/courses.controller');
 const { validationSchema } = require('../midllewares/validationSchema');
-
+const { verifyToken } = require('../midllewares/verifyToken');  
 
 
 router.route('/')
-    .get(coursesController.getAllCourses)
-    .post(validationSchema(), coursesController.addCourse);
+    .get(verifyToken, coursesController.getAllCourses)
+    .post(verifyToken, validationSchema(), coursesController.addCourse);
 
 
 router.route('/:id')
-    .get(coursesController.getCourse)
-    .patch(coursesController.editCourse)
-    .delete(coursesController.deleteCourse);
+    .get(verifyToken, coursesController.getCourse)
+    .patch(verifyToken, coursesController.editCourse)
+    .delete(verifyToken, coursesController.deleteCourse);
 
 
 module.exports = router;
