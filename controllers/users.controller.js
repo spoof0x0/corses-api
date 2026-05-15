@@ -19,8 +19,8 @@ const getAllUsers = async (req, res) => {
 
 
 const register = async (req, res) => {
-    const {firstName, lastName, email, password} = req.body;
-    
+    const {firstName, lastName, email, password, role} = req.body;
+    const avatar = req.file ? req.file.path.replace(/\\/g, '/') : undefined;
     const existingUser = await user.findOne({email});
     if (existingUser) {
         return res.status(400).json({ status: httpStatusText.FAIL, message: 'User already exists' });
@@ -32,8 +32,10 @@ const register = async (req, res) => {
         lastName, 
         email, 
         password: hashedPassword,
+        role,
+        avatar
     });
-    const token = await jwt.sign({ email: email , id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = await jwt.sign({ email: email , id: newUser._id, role: newUser.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
     newUser.token = token;
 
     await newUser.save();
@@ -44,7 +46,10 @@ const register = async (req, res) => {
                 _id: newUser._id,
                 firstName: newUser.firstName,
                 lastName: newUser.lastName,
-                email: newUser.email
+                email: newUser.email,
+                token: newUser.token,
+                role: newUser.role,
+                avatar: newUser.avatar
             }
         }
     });
@@ -64,7 +69,7 @@ const login = async (req, res) => {
         return res.status(400).json({ status: httpStatusText.FAIL, message: 'Invalid credentials' });
     }
 
-    const token = await jwt.sign({ email: email , id: oldUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = await jwt.sign({ email: email , id: oldUser._id, role: oldUser.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
     oldUser.token = token;
 
     res.json({
@@ -75,7 +80,9 @@ const login = async (req, res) => {
                 firstName: oldUser.firstName,
                 lastName: oldUser.lastName,
                 email: oldUser.email,
-                token: oldUser.token
+                token: oldUser.token,
+                role: oldUser.role,
+                avatar: oldUser.avatar
             }
         }
     });

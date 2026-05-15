@@ -4,7 +4,7 @@ const {body} = require('express-validator');
 const coursesController = require('../controllers/courses.controller');
 const { validationSchema } = require('../midllewares/validationSchema');
 const { verifyToken } = require('../midllewares/verifyToken');  
-
+const { allowedTo } = require('../midllewares/allowedTo');
 
 router.route('/')
     .get(verifyToken, coursesController.getAllCourses)
@@ -14,7 +14,7 @@ router.route('/')
 router.route('/:id')
     .get(verifyToken, coursesController.getCourse)
     .patch(verifyToken, coursesController.editCourse)
-    .delete(verifyToken, coursesController.deleteCourse);
+    .delete(verifyToken,allowedTo('admin'), coursesController.deleteCourse);
 
 
 module.exports = router;
